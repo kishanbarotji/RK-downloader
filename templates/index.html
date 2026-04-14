@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RD Downloader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'rd.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 25%, #1a1a1a 50%, #0d0d0d 75%, #0f0f0f 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(50, 50, 50, 0.1) 0%, transparent 50%), 
+                        radial-gradient(circle at 80% 80%, rgba(40, 40, 40, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(30, 30, 30, 0.05) 0%, transparent 50%);
+            animation: gradientShift 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(110deg, transparent 0%, rgba(30, 30, 30, 0.03) 20%, transparent 40%),
+                linear-gradient(-110deg, transparent 0%, rgba(40, 40, 40, 0.03) 20%, transparent 40%);
+            animation: shimmer 6s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header and Title Styling */
+        .header-section {
+            background: linear-gradient(180deg, rgba(50, 50, 50, 0.08) 0%, rgba(0, 0, 0, 0) 100%);
+            padding: 30px 20px;
+            border-bottom: 2px solid rgba(100, 100, 100, 0.3);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(60, 60, 60, 0.1) 0%, transparent 70%);
+            animation: floatAround 20s infinite linear;
+        }
+
+        .header-section > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Logo Styling */
+        .logo {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            animation: fadeInDown 1.5s ease-in-out, float 3s ease-in-out infinite;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 20px rgba(100, 100, 100, 0.3)) drop-shadow(0 0 10px rgba(80, 80, 80, 0.2)) brightness(1.1) contrast(1.2);
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 0 0 20px rgba(100, 100, 100, 0.2);
+            background: linear-gradient(135deg, #cccccc, #ffffff, #e6e6e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: bounce 2.5s ease-in-out infinite, titleGlow 3s ease-in-out infinite;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        /* Container Styling */
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.85);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(60, 60, 60, 0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(80, 80, 80, 0.2);
+            animation: containerPulse 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(70, 70, 70, 0.08) 0%, transparent 70%);
+            animation: spin 20s linear infinite;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(60, 60, 60, 0.08) 0%, transparent 70%);
+            animation: spin 25s linear infinite reverse;
+        }
+
+        /* Form Styling */
+        .form-wrapper {
+            padding: 30px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .mb-3 {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #90EE90;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(144, 238, 144, 0.3);
+            animation: labelGlow 2s ease-in-out infinite;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 18px;
+            background-color: rgba(100, 100, 100, 0.05);
+            border: 2px solid rgba(144, 238, 144, 0.2);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #90EE90;
+            background-color: rgba(144, 238, 144, 0.08);
+            box-shadow: 0 0 20px rgba(144, 238, 144, 0.4), inset 0 0 10px rgba(144, 238, 144, 0.1);
+            transform: translateY(-2px);
+            animation: inputPulse 1.5s ease-in-out infinite;
+        }
+
+        /* Button Styling */
+        .btn-success {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #90EE90, #7CFC00, #32CD32);
+            border: none;
+            border-radius: 10px;
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 10px 30px rgba(144, 238, 144, 0.4), 0 0 20px rgba(50, 205, 50, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: buttonFloat 3s ease-in-out infinite;
+        }
+
+        .btn-success::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-success::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            animation: rippleEffect 0.6s ease-out forwards;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #A0FFA0, #8CFF8C, #40FF40);
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(144, 238, 144, 0.6), 0 0 30px rgba(50, 205, 50, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.15);
+            animation: buttonFloat 2s ease-in-out infinite, buttonGlow 1.5s ease-in-out infinite;
+        }
+
+        .btn-success:hover::before {
+            left: 100%;
+        }
+
+        .btn-success:active {
+            transform: translateY(-2px) scale(0.98);
+            box-shadow: 0 5px 15px rgba(144, 238, 144, 0.4), inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
+        }
+
+        /* Animation: Bounce */
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-15px);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            75% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Animation: Fade In Down */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Animation: Float */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Animation: Gradient Shift */
+        @keyframes gradientShift {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Animation: Shimmer */
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Animation: Float Around */
+        @keyframes floatAround {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(30px, -30px) rotate(90deg);
+            }
+            50% {
+                transform: translate(60px, 0) rotate(180deg);
+            }
+            75% {
+                transform: translate(30px, 30px) rotate(270deg);
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        /* Animation: Pulse Glow */
+        @keyframes pulse-glow {
+            0%, 100% {
+                filter: drop-shadow(0 4px 20px rgba(100, 100, 100, 0.3)) drop-shadow(0 0 10px rgba(80, 80, 80, 0.2));
+            }
+            50% {
+                filter: drop-shadow(0 8px 30px rgba(120, 120, 120, 0.4)) drop-shadow(0 0 20px rgba(100, 100, 100, 0.3));
+            }
+        }
+
+        /* Animation: Title Glow */
+        @keyframes titleGlow {
+            0%, 100% {
+                text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 0 0 15px rgba(100, 100, 100, 0.2);
+            }
+            50% {
+                text-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 0 0 30px rgba(100, 100, 100, 0.4);
+            }
+        }
+
+        /* Animation: Container Pulse */
+        @keyframes containerPulse {
+            0%, 100% {
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(60, 60, 60, 0.15);
+            }
+            50% {
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 60px rgba(70, 70, 70, 0.25);
+            }
+        }
+
+        /* Animation: Spin */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Animation: Label Glow */
+        @keyframes labelGlow {
+            0%, 100% {
+                text-shadow: 0 0 5px rgba(144, 238, 144, 0.3);
+            }
+            50% {
+                text-shadow: 0 0 15px rgba(144, 238, 144, 0.6);
+            }
+        }
+
+        /* Animation: Input Pulse */
+        @keyframes inputPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(144, 238, 144, 0.4), inset 0 0 10px rgba(144, 238, 144, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(144, 238, 144, 0.6), inset 0 0 15px rgba(144, 238, 144, 0.2);
+            }
+        }
+
+        /* Animation: Button Float */
+        @keyframes buttonFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        /* Animation: Button Glow */
+        @keyframes buttonGlow {
+            0%, 100% {
+                box-shadow: 0 20px 50px rgba(144, 238, 144, 0.5), 0 0 30px rgba(50, 205, 50, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 0 20px 50px rgba(144, 238, 144, 0.7), 0 0 40px rgba(50, 205, 50, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        /* Animation: Ripple Effect */
+        @keyframes rippleEffect {
+            from {
+                opacity: 1;
+                transform: scale(0);
+            }
+            to {
+                opacity: 0;
+                transform: scale(2);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+                margin: 20px;
+                border-radius: 15px;
+                padding: 0;
+            }
+
+            .header-section {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+
+            .logo {
+                width: 80px;
+                height: 80px;
+                margin-bottom: 15px;
+            }
+
+            .form-wrapper {
+                padding: 25px 15px;
+            }
+
+            .form-label {
+                font-size: 1rem;
+            }
+
+            .form-control {
+                padding: 13px 15px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
+
+            .btn-success {
+                padding: 14px 20px;
+                font-size: 1rem;
+                letter-spacing: 1px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                margin: 10px 0;
+                border-radius: 12px;
+            }
+
+            .header-section {
+                padding: 15px 10px;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+                letter-spacing: 0.5px;
+            }
+
+            .logo {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 10px;
+            }
+
+            .form-wrapper {
+                padding: 20px 12px;
+            }
+
+            .mb-3 {
+                margin-bottom: 18px;
+            }
+
+            .form-label {
+                font-size: 0.95rem;
+                margin-bottom: 10px;
+            }
+
+            .form-control {
+                padding: 12px 12px;
+                font-size: 16px;
+            }
+
+            .btn-success {
+                padding: 12px 18px;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Dark Mode Enhancement */
+        body {
+            scrollbar-width: thin;
+            scrollbar-color: #90EE90 rgba(144, 238, 144, 0.1);
+        }
+
+        body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: rgba(100, 100, 100, 0.05);
+            border-radius: 10px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: #90EE90;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(144, 238, 144, 0.3);
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: #7CFC00;
+            box-shadow: 0 0 15px rgba(124, 252, 0, 0.5);
+        }
+
+        /* Focus States for Accessibility */
+        .form-control:focus-visible,
+        .btn-success:focus-visible {
+            outline: 2px solid #90EE90;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-section">
+        <img src="{% static 'RD.png' %}" alt="RD Logo" class="logo">
+        <h1>RD Downloader</h1>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="form-wrapper">
+            <form method="POST" action="{% url 'download_video' %}">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="video_url" class="form-label">Enter Video URL</label>
+                    <input 
+                        type="url" 
+                        class="form-control" 
+                        id="video_url" 
+                        name="video_url" 
+                        placeholder="https://www.youtube.com/watch?v=..." 
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    ⬇️ Download Video
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Add loading state to button
+        document.querySelector('form').addEventListener('submit', function() {
+            const button = document.querySelector('.btn-success');
+            button.disabled = true;
+            button.textContent = '⏳ Downloading...';
+        });
+    </script>
+</body>
+</html>

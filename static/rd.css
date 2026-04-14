@@ -1,0 +1,62 @@
+body {
+    background-color: #121212; /* Dark mode background */
+    color: #ffffff; /* Light text */
+}
+
+/* ટાઇટલ માટે બાઉન્સ એનિમેશન */
+h1 {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    margin-top: 10px;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+    animation: bounce 2s infinite; /* ટાઇટલ માટે બાઉન્સ એનિમેશન */
+}
+
+/* લોગો માટે ફેડ-ઇન એનિમેશન */
+.logo {
+    width: 100px; /* લોગોની પહોળાઈ */
+    height: auto; /* લંબાઈ ઓટોમેટિક */
+    animation: fadeInDown 2s ease-in-out;
+}
+
+/* બાઉન્સ એનિમેશન */
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ફેડ-ઇન ડાઉન એનિમેશન */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn-success {
+    background-color: #28a745;
+    border: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-success:hover {
+    background-color: #45d65d;
+    transform: scale(1.1); /* Button hover animation */
+    box-shadow: 0 5px 15px rgba(72, 239, 128, 0.5);
+}
+
+input:focus {
+    border-color: #45d65d;
+    box-shadow: 0 0 10px rgba(72, 239, 128, 0.5);
+}

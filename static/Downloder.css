@@ -1,0 +1,11 @@
+#search-container {
+    text-align: center;
+    margin-top: 50px;
+}
+#video-container {
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    margin-top: 20px;
+    display: none;
+}
